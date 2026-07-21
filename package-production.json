@@ -1,0 +1,25 @@
+{
+  "name": "qc-checking-app",
+  "version": "1.0.0",
+  "description": "Real-time QC Checking Progress Monitoring System",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:pull": "prisma db pull",
+    "db:studio": "prisma studio",
+    "db:migrate": "prisma migrate dev"
+  },
+  "keywords": [
+    "qc",
+    "checking",
+    "quality-control",
+    "realtime",
+    "nextjs"
+  ],
+  "author": "",
+  "license": "MIT"
+}

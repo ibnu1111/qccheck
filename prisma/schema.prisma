@@ -1,0 +1,28 @@
+// Prisma Schema for QC Checking App
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_URL")
+}
+
+model Scan {
+  id         String   @id @default(cuid())
+  nik        String
+  nama       String?
+  machine    String
+  bobbinNr   String
+  alignment  String   // "OK" atau "NOT_OK"
+  sudut      Float?
+  susut      Float?
+  remark     String?
+  createdAt  DateTime @default(now())
+
+  @@index([nik, createdAt])
+  @@index([bobbinNr, createdAt])
+  @@index([machine, createdAt])
+  @@index([createdAt])
+}

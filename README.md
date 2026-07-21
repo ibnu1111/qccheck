@@ -1,93 +1,179 @@
-# qccheck
+# QC Checking App
 
+Real-time QC Checking Progress Monitoring System
 
+## Tech Stack
 
-## Getting started
+- **Frontend & Backend**: Next.js 14 (App Router)
+- **Database**: Vercel Postgres / PostgreSQL
+- **ORM**: Prisma
+- **Styling**: Tailwind CSS
+- **Scanner**: html5-qrcode (camera + manual fallback)
+- **Real-time**: Server-Sent Events (SSE)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Features
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- 📷 Scan barcode/QR code via camera HP
+- ✏️ Fallback input manual
+- ✅ Input data alignment, sudut, susut
+- 📊 Real-time QC Progress table
+- 🔢 Counter (3/4 checks per bobbin)
+- 📅 History per hari
+- 🔄 Real-time update ke semua client
 
-## Add your files
+## Getting Started
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+### Prerequisites
 
+- Node.js 18+
+- npm atau yarn
+- PostgreSQL database (local atau Vercel Postgres)
+
+### Installation
+
+```bash
+# Clone / masuk ke folder project
+cd qc-checking-app
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env.local
+
+# Setup database URL di .env.local
+# Untuk local: postgresql://user:password@localhost:5432/qc_checking
+# Untuk Vercel: Paste URL dari Vercel Dashboard
+
+# Generate Prisma client
+npm run db:generate
+
+# Push schema ke database
+npm run db:push
+
+# Start development server
+npm run dev
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/ibnu1111/qccheck.git
+
+Buka [http://localhost:3000](http://localhost:3000)
+
+### Database Commands
+
+```bash
+npm run db:generate    # Generate Prisma client
+npm run db:push        # Push schema ke database
+npm run db:studio      # Buka Prisma Studio (GUI)
+```
+
+## Deployment to Vercel
+
+### Step 1: Push ke GitHub
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
 git branch -M main
-git push -uf origin main
+git remote add origin https://github.com/username/qc-checking-app.git
+git push -u origin main
 ```
 
-## Integrate with your tools
+### Step 2: Setup Vercel
 
-* [Set up project integrations](https://gitlab.com/ibnu1111/qccheck/-/settings/integrations)
+1. Buka [vercel.com](https://vercel.com)
+2. Klik "Add New Project"
+3. Import repository GitHub
+4. Klik "Deploy"
 
-## Collaborate with your team
+### Step 3: Setup Vercel Postgres
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+1. Di project Vercel, buka "Storage" tab
+2. Klik "Create Database"
+3. Pilih "Vercel Postgres"
+4. Copy connection string ke environment variable (otomatis)
 
-## Test and Deploy
+### Step 4: Configure Environment Variables
 
-Use the built-in continuous integration in GitLab.
+Di Vercel Dashboard > Settings > Environment Variables:
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+```
+POSTGRES_URL = (otomatis dari Vercel Postgres)
+```
 
-***
+### Step 5: Deploy
 
-# Editing this README
+Setiap push ke branch `main` akan auto-deploy.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Project Structure
 
-## Suggestions for a good README
+```
+qc-checking-app/
+├── app/
+│   ├── api/
+│   │   ├── scan/route.ts      # POST: Submit scan, GET: List scans
+│   │   ├── progress/route.ts  # GET: QC progress
+│   │   └── sse/route.ts       # SSE: Real-time updates
+│   ├── page.tsx               # Main page
+│   ├── layout.tsx             # Root layout
+│   └── globals.css            # Global styles
+├── components/
+│   ├── Scanner.tsx            # Camera scanner + manual input
+│   ├── ManualInput.tsx        # Form input manual
+│   ├── QCProgressTable.tsx    # Progress table (real-time)
+│   ├── ScanStepIndicator.tsx  # Step progress indicator
+│   ├── ScanHistory.tsx        # Recent scans
+│   └── CounterBadge.tsx       # Bobbin counter badges
+├── lib/
+│   ├── prisma.ts              # Prisma client
+│   ├── store.ts               # Zustand state store
+│   ├── types.ts               # TypeScript types
+│   └── utils.ts               # Utility functions
+├── prisma/
+│   └── schema.prisma           # Database schema
+└── package.json
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## API Endpoints
 
-## Name
-Choose a self-explaining name for your project.
+### POST /api/scan
+Submit new scan data.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```json
+{
+  "nik": "1447",
+  "nama": "Putri Naura",
+  "machine": "431",
+  "bobbinNr": "L2603046777",
+  "alignment": "OK",
+  "sudut": 0.5,
+  "susut": 0.1,
+  "remark": ""
+}
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### GET /api/scan
+Get today's scans (with filters).
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```
+/api/scan?date=2026-01-01
+/api/scan?nik=1447
+/api/scan?bobbinNr=L2603046777
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### GET /api/progress
+Get QC progress grouped by machine + operator.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### GET /api/sse
+Server-Sent Events for real-time updates.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## Scan Flow
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+1. **Scan NIK** → Scan kartu identitas operator
+2. **Scan Machine** → Scan barcode mesin
+3. **Scan Bobbin** → Scan nomor bobbin
+4. **Input Manual** → Pilih OK/NOT OK dari papan meja, isi sudut & susut
+5. **Submit** → Data tersimpan, QC Progress update otomatis
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+MIT
