@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getStartOfDay, getEndOfDay } from '@/lib/utils'
+import { broadcastSSE } from '@/lib/sse'
 import type { ScanData } from '@/lib/types'
+import type { Prisma } from '@prisma/client'
+
+export const dynamic = 'force-dynamic'
 
 // POST /api/scan - Submit new scan data
 export async function POST(request: NextRequest) {
@@ -83,7 +87,7 @@ export async function GET(request: NextRequest) {
     const nik = searchParams.get('nik')
     const bobbinNr = searchParams.get('bobbinNr')
 
-    const whereClause: Parameters<typeof prisma.scan.findMany>[0]['where'] = {}
+    const whereClause: Prisma.ScanWhereInput = {}
 
     if (date) {
       const d = new Date(date)
@@ -118,21 +122,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-
-// SSE broadcast storage (in-memory for simplicity)
-const sseClients: Set<ReadableStreamDefaultController> = new Set()
-
-export function broadcastSSE(event: { type: string; data: unknown }) {
-  const encoder = new TextEncoder()
-  const message = `data: ${JSON.stringify(event)}\n\n`
-
-  sseClients.forEach((controller) => {
-    try {
-      controller.enqueue(encoder.encode(message))
-    } catch {
-      sseClients.delete(controller)
-    }
-  })
-}
-
-export { sseClients }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getStartOfDay, getEndOfDay, formatTime } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/progress - Get QC progress for today
 export async function GET(request: NextRequest) {
   try {

@@ -97,7 +97,7 @@ export default function QCProgressTable({ refreshTrigger }: QCProgressTableProps
     }
   }, [refreshTrigger])
 
-  const getCheckStatus = (scans: { alignment: string }[]) => {
+  const getCheckStatus = (scans: { time?: string; alignment: string }[]) => {
     return scans.map((scan, idx) => ({
       time: scan.time,
       alignment: scan.alignment,

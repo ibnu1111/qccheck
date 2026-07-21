@@ -1,7 +1,5 @@
 'use client'
 
-import { ScanStep } from './ScanStepIndicator'
-
 interface ScanHistoryProps {
   scans: {
     id: string

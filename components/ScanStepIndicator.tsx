@@ -38,9 +38,9 @@ export default function ScanStepIndicator({ currentStep, scannedData }: ScanStep
 
           // Get scanned value for display
           let value = ''
-          if (step.key === 'nik') value = scannedData.nik
-          if (step.key === 'machine') value = scannedData.machine
-          if (step.key === 'bobbin') value = scannedData.bobbinNr
+          if (step.key === 'nik') value = scannedData.nik || ''
+          if (step.key === 'machine') value = scannedData.machine || ''
+          if (step.key === 'bobbin') value = scannedData.bobbinNr || ''
 
           return (
             <div key={step.key} className="flex items-center">
