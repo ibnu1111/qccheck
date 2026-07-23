@@ -10,19 +10,21 @@ datasource db {
 }
 
 model Scan {
-  id         String   @id @default(cuid())
-  nik        String
-  nama       String?
-  machine    String
-  bobbinNr   String
-  alignment  String   // "OK" atau "NOT_OK"
-  sudut      Float?
-  susut      Float?
-  remark     String?
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  nik          String   // NIK operator (dari scan barcode)
+  nama         String?  // Nama operator
+  machine      String   // Mesin (dari scan barcode)
+  bobbinNr     String   // Bobbin number (dari scan barcode)
+  subBy        String?  // Nama/NIK QC inspector yang submit
+  alignment    String   // "OK" atau "NOT_OK"
+  sudut        Float?
+  susut        Float?
+  remark       String?
+  createdAt    DateTime @default(now())
 
   @@index([nik, createdAt])
   @@index([bobbinNr, createdAt])
   @@index([machine, createdAt])
+  @@index([subBy, createdAt])
   @@index([createdAt])
 }

@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
         nama: body.nama || null,
         machine: body.machine,
         bobbinNr: body.bobbinNr,
+        subBy: body.subBy || null,
         alignment: body.alignment || 'OK',
         sudut: body.sudut || null,
         susut: body.susut || null,

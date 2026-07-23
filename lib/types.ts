@@ -7,6 +7,7 @@ export interface ScanData {
   nama?: string
   machine: string
   bobbinNr: string
+  subBy?: string
   alignment: 'OK' | 'NOT_OK'
   sudut?: number
   susut?: number

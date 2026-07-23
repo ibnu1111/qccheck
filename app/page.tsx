@@ -6,9 +6,54 @@ import ManualInput from '@/components/ManualInput'
 import ScanStepIndicator from '@/components/ScanStepIndicator'
 import CounterBadge from '@/components/CounterBadge'
 import QCProgressTable from '@/components/QCProgressTable'
-import type { ScanData, ScanRecord, ScanCounter } from '@/lib/types'
+import type { ScanData, ScanRecord, ScanCounter, ScanStep } from '@/lib/types'
 
-type ScanStep = 'nik' | 'machine' | 'bobbin' | 'manual' | 'complete'
+// Helper: Parse barcode dengan smart detection
+// Format 1: "Nama NIK" (kartu pink) -> "Putri Naura 1947" atau "Putri/1947"
+// Format 2: "Machine" (Code 128) -> "440" atau "F A2620-BW525118"
+// Format 3: "Bobbin" (Code 128) -> "IL26022822"
+function parseBarcode(raw: string, type: 'nik' | 'machine' | 'bobbin' | 'subBy'): {
+  value: string
+  extra?: string
+} {
+  const trimmed = raw.trim()
+
+  if (type === 'nik') {
+    // Format: "Nama NIK" atau "Nama/NIK" atau "Nama-NIK"
+    // Pisahkan dengan / atau - atau spasi (ambil digit terakhir sebagai NIK)
+    const partsBySlash = trimmed.split('/')
+    if (partsBySlash.length >= 2) {
+      return { value: partsBySlash[1].trim(), extra: partsBySlash[0].trim() }
+    }
+
+    const partsByDash = trimmed.split('-')
+    if (partsBySlash.length === 1 && partsByDash.length >= 2) {
+      // Cek apakah bagian terakhir adalah angka (NIK)
+      const lastPart = partsByDash[partsByDash.length - 1]
+      if (/^\d+$/.test(lastPart)) {
+        const nama = partsByDash.slice(0, -1).join('-').trim()
+        return { value: lastPart, extra: nama }
+      }
+    }
+
+    // Cari pattern digit NIK di akhir string
+    const match = trimmed.match(/^(.+?)\s+(\d+)$/)
+    if (match) {
+      return { value: match[2], extra: match[1].trim() }
+    }
+
+    // Cek apakah seluruh string adalah angka
+    if (/^\d+$/.test(trimmed)) {
+      return { value: trimmed }
+    }
+
+    // Default: anggap semua sebagai NIK
+    return { value: trimmed }
+  }
+
+  // Machine dan Bobbin: simpan apa adanya
+  return { value: trimmed }
+}
 
 export default function HomePage() {
   // State
@@ -25,39 +70,56 @@ export default function HomePage() {
     setTimeout(() => setToast(null), 3000)
   }, [])
 
-  // Handle scan result
+  // Handle scan result dengan smart barcode parsing
   const handleScan = useCallback((result: string) => {
     console.log('Scanned:', result)
 
-    // Parse the scanned value (assuming format: NIK-NAME or just NIK)
-    const parts = result.split('-')
-    const nik = parts[0] || result
-    const nama = parts[1] || ''
+    let nextStep: ScanStep = scanStep
+    let toastMsg = ''
 
     setScannedData((prev) => {
       const updated = { ...prev }
 
       switch (scanStep) {
-        case 'nik':
-          updated.nik = nik
-          updated.nama = nama || undefined
-          setScanStep('machine')
-          showToast(`NIK ${nik} berhasil discan`, 'success')
+        case 'nik': {
+          const { value, extra } = parseBarcode(result, 'nik')
+          updated.nik = value
+          updated.nama = extra
+          nextStep = 'machine'
+          toastMsg = extra
+            ? `NIK ${value} - ${extra} berhasil discan`
+            : `NIK ${value} berhasil discan`
           break
-        case 'machine':
-          updated.machine = nik
-          setScanStep('bobbin')
-          showToast(`Mesin ${nik} berhasil discan`, 'success')
+        }
+        case 'machine': {
+          const { value } = parseBarcode(result, 'machine')
+          updated.machine = value
+          nextStep = 'bobbin'
+          toastMsg = `Mesin ${value} berhasil discan`
           break
-        case 'bobbin':
-          updated.bobbinNr = nik
-          setScanStep('manual')
-          showToast(`Bobbin ${nik} berhasil discan`, 'success')
+        }
+        case 'bobbin': {
+          const { value } = parseBarcode(result, 'bobbin')
+          updated.bobbinNr = value
+          nextStep = 'subBy'
+          toastMsg = `Bobbin ${value} berhasil discan`
           break
+        }
+        case 'subBy': {
+          const { value, extra } = parseBarcode(result, 'subBy')
+          updated.subBy = value
+          if (extra) updated.nama = extra
+          nextStep = 'manual'
+          toastMsg = `Submitter ${value} berhasil discan`
+          break
+        }
       }
 
       return updated
     })
+
+    if (toastMsg) showToast(toastMsg, 'success')
+    if (nextStep !== scanStep) setScanStep(nextStep)
   }, [scanStep, showToast])
 
   // Handle manual input submission
@@ -137,7 +199,7 @@ export default function HomePage() {
 
   // Cancel manual input
   const handleCancel = () => {
-    setScanStep('bobbin')
+    setScanStep('subBy')
   }
 
   // SSE for real-time updates
@@ -252,6 +314,7 @@ export default function HomePage() {
             nik: scannedData.nik,
             machine: scannedData.machine,
             bobbinNr: scannedData.bobbinNr,
+            subBy: scannedData.subBy,
           }}
         />
 
@@ -295,7 +358,8 @@ export default function HomePage() {
                     {scanStep === 'nik' && 'Scan NIK / Kartu Operator'}
                     {scanStep === 'machine' && 'Scan Kode Mesin'}
                     {scanStep === 'bobbin' && 'Scan Nomor Bobbin'}
-                    {scanStep === 'manual' && 'Input Data Manual'}
+                    {scanStep === 'subBy' && 'Scan NIK Submitter (QC)'}
+                    {scanStep === 'manual' && 'Input Data QC Manual'}
                   </span>
                 </>
               )}

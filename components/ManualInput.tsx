@@ -32,6 +32,7 @@ export default function ManualInput({
         nama: scannedData.nama,
         machine: scannedData.machine || '',
         bobbinNr: scannedData.bobbinNr || '',
+        subBy: scannedData.subBy,
         alignment: alignment as 'OK' | 'NOT_OK',
         sudut: sudut ? parseFloat(sudut) : undefined,
         susut: susut ? parseFloat(susut) : undefined,
@@ -65,6 +66,10 @@ export default function ManualInput({
           <div>
             <span className="text-gray-500">Bobbin:</span>
             <span className="ml-2 font-medium">{scannedData.bobbinNr || '-'}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Sub.By:</span>
+            <span className="ml-2 font-medium">{scannedData.subBy || '-'}</span>
           </div>
         </div>
       </div>
