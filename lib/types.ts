@@ -1,6 +1,6 @@
 // Type definitions for QC Checking App
 
-export type ScanStep = 'nik' | 'machine' | 'bobbin' | 'manual' | 'complete'
+export type ScanStep = 'nik' | 'machine' | 'bobbin' | 'subBy' | 'manual' | 'complete'
 
 export interface ScanData {
   nik: string
